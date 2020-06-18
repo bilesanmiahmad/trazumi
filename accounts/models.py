@@ -84,6 +84,8 @@ class Profile(models.Model):
     )
     primary_phone = models.BigIntegerField(
         'Phone Number',
+        blank=True,
+        null=True
     )
     secondary_phone = models.BigIntegerField(
         'Secondary Phone Number',
