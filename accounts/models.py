@@ -51,6 +51,15 @@ class User(AbstractUser):
         return self.first_name
 
 
+class Address(models.Model):
+    line_1 = models.CharField(max_length=200)
+    line_2 = models.CharField(max_length=200, blank=True)
+    state = models.CharField(max_length=20)
+    lga = models.CharField(max_length=40)
+    date_created = models.DateTimeField(auto_now=True)
+    date_updated = models.DateTimeField(auto_now_add=True)
+    
+
 class Profile(models.Model):
     AGENT = 'AG'
     CUSTOMER = 'CU'
@@ -92,10 +101,15 @@ class Profile(models.Model):
         blank=True,
         null=True,
     )
-    address = models.TextField(
-        'Address',
+    address = models.ForeignKey(
+        Address,
+        on_delete=models.DO_NOTHING,
+        related_name='user_addresses',
         blank=True,
+        null=True
     )
+    date_created = models.DateTimeField(auto_now=True)
+    date_updated = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.user.email

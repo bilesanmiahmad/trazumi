@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from rest_framework import viewsets
+from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import action
 from accounts.models import User
-from accounts.serializers import UserSerializer
+from accounts.serializers import UserSerializer, RegistrationSerializer
 from accounts.permissions import IsLoggedInUserOrAdmin, IsAdminUser
-from accounts import utils as u
 
 # Create your views here.
 
@@ -82,6 +83,24 @@ class UserViewSet(viewsets.ModelViewSet):
                 'results': serializer.data
             },
             status=status.HTTP_201_CREATED
+        )
+    
+    @action(methods=['post'], detail=False, permission_classes=[AllowAny])
+    def signup(self, request):
+        serializer = RegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            user_serializer = self.serializer_class(user)
+            return Response(
+                {
+                    'results': user_serializer.data
+                },
+                status=status.HTTP_201_CREATED
+            )
+        return Response(
+            {
+                'error': serializer.errors
+            }
         )
 
     def facebook_signup(self, request):
