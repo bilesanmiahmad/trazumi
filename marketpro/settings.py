@@ -40,9 +40,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'rest_framework',
+    'rest_framework.authtoken',
     'inventory',
     'payments',
     'django_extensions',
+    'django_q',
 ]
 
 MIDDLEWARE = [
@@ -56,6 +58,15 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'marketpro.urls'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        ),
+    'DEFAULT_PERMISSION_CLASSES':(
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
 
 TEMPLATES = [
     {
@@ -82,10 +93,10 @@ WSGI_APPLICATION = 'marketpro.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
+        'NAME': os.environ.get('POSTGRES_DB'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': 'db',
         'PORT': 5432
     }
 }
@@ -131,3 +142,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+
+EMAIL_HOST = 'smtp.zoho.com'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False

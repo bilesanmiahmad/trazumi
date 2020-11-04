@@ -2,19 +2,35 @@ from django.db import models
 
 # Create your models here.
 from django.db import models
-from django.contrib.auth.models import PermissionsMixin
+from django.contrib.auth.models import PermissionsMixin, AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import AbstractUser
 
 
-class User(AbstractUser):
+class UserManager(BaseUserManager):
+
+    def create_user(self, email, password=None, **extra_fields):
+        """
+        Creates a new user
+        """
+        if not email:
+            raise ValueError("This object requires an email")
+        user = self.model(email=self.normalize_email(email), **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+    
+    def create_superuser(self, email, password):
+        user = self.create_user(email, password)
+        user.is_staff = True
+        user.is_superuser = True
+        user.save(using=self._db)
+        return user
+
+
+class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
         'Email Address',
         unique=True
-    )
-    username = models.CharField(
-        max_length=30,
-        blank=True,
-        null=True
     )
     first_name = models.CharField(
         'First Name',
@@ -34,10 +50,14 @@ class User(AbstractUser):
         'Active',
         default=True
     )
+    is_staff = models.BooleanField(default=False)
+    verification_pin = models.IntegerField(default=0)
+
+    objects = UserManager()
     
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    # REQUIRED_FIELDS = ['first_name', 'last_name']
 
     class Meta:
         verbose_name = 'user'
@@ -49,6 +69,9 @@ class User(AbstractUser):
     
     def get_short_name(self):
         return self.first_name
+    
+    def __str__(self):
+        return self.email
 
 
 class Profile(models.Model):
@@ -67,20 +90,26 @@ class Profile(models.Model):
     )
     device_type = models.CharField(
         'Device Type',
-        max_length=15
+        max_length=15,
+        blank=True,
+        null=True
     )
     location = models.CharField(
         'Location',
-        max_length=5
+        max_length=5,
+        blank=True,
+        null=True
     )
     ip_address = models.GenericIPAddressField(
         'IP Address',
+        blank=True,
+        null=True
     )
     user_type = models.CharField(
         'User Type',
         max_length=5,
         choices=USER_TYPES,
-        default=AGENT
+        default=CUSTOMER
     )
     primary_phone = models.BigIntegerField(
         'Phone Number',
