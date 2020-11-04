@@ -24,7 +24,7 @@ router.register(r'accounts', UserViewSet, 'accounts')
 
 
 router = DefaultRouter()
-router.register(r'accounts', views.UserViewSet)
+router.register(r'accounts', UserViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(router.urls)),
