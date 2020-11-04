@@ -139,23 +139,23 @@ class UserViewSet(viewsets.ModelViewSet):
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    @action(methods=['post'], detail=False, permission_classes=[AllowAny])
-    def signup(self, request):
-        serializer = RegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            user_serializer = self.serializer_class(user)
-            return Response(
-                {
-                    'results': user_serializer.data
-                },
-                status=status.HTTP_201_CREATED
-            )
-        return Response(
-            {
-                'error': serializer.errors
-            }
-        )
+    # @action(methods=['post'], detail=False, permission_classes=[AllowAny])
+    # def signup(self, request):
+    #     serializer = RegistrationSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         user = serializer.save()
+    #         user_serializer = self.serializer_class(user)
+    #         return Response(
+    #             {
+    #                 'results': user_serializer.data
+    #             },
+    #             status=status.HTTP_201_CREATED
+    #         )
+    #     return Response(
+    #         {
+    #             'error': serializer.errors
+    #         }
+    #     )
 
     @action(methods=['post'], detail=False, url_path='forgot-password', permission_classes=[AllowAny])
     def forgot_password(self, request):
