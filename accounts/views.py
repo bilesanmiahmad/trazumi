@@ -1,6 +1,7 @@
 from django.shortcuts import render
-from django.contrib.auth import authenticate, login
-from rest_framework import viewsets, status
+from rest_framework import viewsets
+from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -136,6 +137,24 @@ class UserViewSet(viewsets.ModelViewSet):
                 'errors': 'This user does not exist'
             },
             status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    @action(methods=['post'], detail=False, permission_classes=[AllowAny])
+    def signup(self, request):
+        serializer = RegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            user_serializer = self.serializer_class(user)
+            return Response(
+                {
+                    'results': user_serializer.data
+                },
+                status=status.HTTP_201_CREATED
+            )
+        return Response(
+            {
+                'error': serializer.errors
+            }
         )
 
     @action(methods=['post'], detail=False, url_path='forgot-password', permission_classes=[AllowAny])
