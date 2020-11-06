@@ -51,6 +51,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=True
     )
     is_staff = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
     verification_pin = models.IntegerField(default=0)
 
     objects = UserManager()

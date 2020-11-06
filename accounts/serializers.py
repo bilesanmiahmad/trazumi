@@ -33,3 +33,27 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'date_joined', 'verification_pin']
+
+
+class FullUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'date_joined', 'verification_pin', 'auth_token']
+
+
+class ActivateUserSerilaizer(serializers.Serializer):
+    email = serializers.EmailField()
+    pin = serializers.IntegerField()
+
+    def validate(self, data):
+        email = data.get('email', None)
+        pin = data.get('pin', None)
+        try:
+            user = User.objects.get(email=email, verification_pin=pin)
+            data['user'] = user
+        except User.DoesNotExist:
+            raise serializers.ValidationError('Email or verification key is wrong')
+        
+        return data
+

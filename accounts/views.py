@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.contrib.auth import authenticate
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
@@ -7,7 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from accounts.models import User
-from accounts.serializers import UserSerializer, SignupSerializer
+from accounts.serializers import UserSerializer, SignupSerializer, ActivateUserSerilaizer, FullUserSerializer
 from accounts.permissions import IsLoggedInUserOrAdmin, IsAdminUser
 from accounts import utils as u
 from accounts import mails
@@ -100,7 +101,6 @@ class UserViewSet(viewsets.ModelViewSet):
                 user.save()
                 mails.send_formatted_email(user)
                 user_data = serializer.data
-                user_data['token'] = token.key
                 user_data['verification_pin'] = user.verification_pin
             return Response(
                 {
@@ -119,22 +119,26 @@ class UserViewSet(viewsets.ModelViewSet):
     def login(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
+        
         user = authenticate(request, email=email, password=password)
         if user:
-            login(request, user)
-            serializer = UserSerializer(user)
-            token = Token.objects.get(user=user)
-            full_user_data = serializer.data
-            full_user_data['token'] = token.key
+            if not user.is_verified:
+                return Response(
+                    {
+                        'errors': 'This user is not verified'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            serializer = FullUserSerializer(user)
             return Response(
                 {
-                    'results': full_user_data
+                    'results': serializer.data
                 },
                 status=status.HTTP_200_OK
             )
         return Response(
             {
-                'errors': 'This user does not exist'
+                'errors': 'User email or password is wrong'
             },
             status=status.HTTP_400_BAD_REQUEST
         )
@@ -163,6 +167,24 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def facebook_signup(self, request):
         pass
-
+    @action(methods=['post'], detail=False, url_path='verify-user', permission_classes=[AllowAny])
     def verify(self, request):
-        pass
+        serializer = ActivateUserSerilaizer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            user.is_verified = True
+            user.save()
+            token = Token.objects.get_or_create(user=user)
+            mails.send_verification_email(user)
+            serializer_data = FullUserSerializer(user)
+            return Response(
+                {
+                    "results": serializer_data.data
+                },
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
