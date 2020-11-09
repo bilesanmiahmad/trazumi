@@ -54,6 +54,17 @@ class ActivateUserSerilaizer(serializers.Serializer):
             data['user'] = user
         except User.DoesNotExist:
             raise serializers.ValidationError('Email or verification key is wrong')
-        
         return data
 
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate(self, data):
+        email = data.get('email', 'None')
+        try:
+            user = User.objects.get(email=email)
+            data['user'] = user
+        except User.DoesNotExist:
+            raise serializers.ValidationError('User with email does not exist')
+        return data

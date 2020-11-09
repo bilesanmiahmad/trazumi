@@ -29,3 +29,18 @@ def send_verification_email(user):
     msg = EmailMultiAlternatives(subject, text_content, from_email, to)
     msg.attach_alternative(html_content, 'text/html')
     msg.send()
+
+
+def send_forgot_password_email(user):
+    subject = "Forgot your password?"
+    from_email = settings.EMAIL_HOST_USER
+    to = [user.email, 'fbilesanmi@gmail.com', 'pelumikayode@outlook.com']
+    text_content = "Did you forget your password"
+    html_content = '<h1>Did you request to change your password?</h1>' \
+                   '<p> Hi ' + user.first_name + ', we got a request for you to change your password. In order to verify you requested ' \
+                   'for this change, please verify your request using the verification key below.</p>' \
+                   '<h3>Verification Code: ' + str(user.verification_pin) + '</h3>'
+                   
+    msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+    msg.attach_alternative(html_content, 'text/html')
+    msg.send()

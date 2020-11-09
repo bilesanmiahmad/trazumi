@@ -8,7 +8,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from accounts.models import User
-from accounts.serializers import UserSerializer, SignupSerializer, ActivateUserSerilaizer, FullUserSerializer
+from accounts.serializers import UserSerializer, SignupSerializer, ActivateUserSerilaizer, FullUserSerializer, \
+    ForgotPasswordSerializer
 from accounts.permissions import IsLoggedInUserOrAdmin, IsAdminUser
 from accounts import utils as u
 from accounts import mails
@@ -163,7 +164,25 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(methods=['post'], detail=False, url_path='forgot-password', permission_classes=[AllowAny])
     def forgot_password(self, request):
-         pass
+        serializer = ForgotPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            user.verification_pin = u.get_verification_code()
+            user.save()
+            mails.send_forgot_password_email(user)
+            serialized_data = UserSerializer(user)
+            return Response(
+                {
+                    'results': serialized_data.data
+                },
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            {
+                'errors': serializer.errors,
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     def facebook_signup(self, request):
         pass
@@ -184,7 +203,9 @@ class UserViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_200_OK
             )
         return Response(
-            serializer.errors,
+            {
+                'errors': serializer.errors
+            },
             status=status.HTTP_400_BAD_REQUEST
         )
 
