@@ -61,9 +61,34 @@ class ForgotPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
     def validate(self, data):
-        email = data.get('email', 'None')
+        email = data.get('email', None)
         try:
             user = User.objects.get(email=email)
+            data['user'] = user
+        except User.DoesNotExist:
+            raise serializers.ValidationError('User with email does not exist')
+        return data
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+    confirm_password = serializers.CharField()
+
+    def validate(self, data):
+        email = data.get('email', None)
+        password = data.get('password', None)
+        confirm_password = data.get('confirm_password', None)
+
+        if len(password) < 8:
+            raise serializers.ValidationError('Password should be 8 or more characters')
+        elif password is not confirm_password:
+            raise serializers.ValidationError('Passwords must be equal')
+
+        try:
+            user = User.objects.get(email=email)
+            if user.is_verified is False:
+                raise serializers.ValidationError('User must be verified to change password.')
             data['user'] = user
         except User.DoesNotExist:
             raise serializers.ValidationError('User with email does not exist')

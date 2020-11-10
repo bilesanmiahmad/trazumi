@@ -44,3 +44,17 @@ def send_forgot_password_email(user):
     msg = EmailMultiAlternatives(subject, text_content, from_email, to)
     msg.attach_alternative(html_content, 'text/html')
     msg.send()
+
+
+def send_change_password_email(user):
+    subject = "Your password has been changed"
+    from_email = settings.EMAIL_HOST_USER
+    to = [user.email, 'fbilesanmi@gmail.com', 'pelumikayode@outlook.com']
+    text_content = "Your password has been changed"
+    html_content = '<h1>Congratulations, you have successfully changed your password</h1>' \
+                   '<p> Congratulations' + user.first_name + ', you have changed your password. ' \
+                   'You can get back on the Trazumi platform to enjoy your shopping experience.</p>' 
+                   
+    msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+    msg.attach_alternative(html_content, 'text/html')
+    msg.send()

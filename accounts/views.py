@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from accounts.models import User
 from accounts.serializers import UserSerializer, SignupSerializer, ActivateUserSerilaizer, FullUserSerializer, \
-    ForgotPasswordSerializer
+    ForgotPasswordSerializer, ChangePasswordSerializer
 from accounts.permissions import IsLoggedInUserOrAdmin, IsAdminUser
 from accounts import utils as u
 from accounts import mails
@@ -199,6 +199,52 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(
                 {
                     "results": serializer_data.data
+                },
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            {
+                'errors': serializer.errors
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    action(methods=['post'], detail=False, url_path='verify-forgot-password', permission_classes=[AllowAny])
+    def verify_forgot_password(self, request):
+        serializer = ActivateUserSerilaizer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            user.is_verified = True
+            user.save()
+            serializer_data = FullUserSerializer(user)
+            return Response(
+                {
+                    "results": serializer_data.data
+                },
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            {
+                'errors': serializer.errors
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    action(methods=['post'], detail=False, url_path='change-password', permission_classes=[AllowAny])
+    def change_password(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            password = serializer.validated_data['password']
+            user.set_password(password)
+            user.save()
+            token = Token.objects.get_or_create(user=user)
+            mails.send_change_password_email(user)
+            serializer_data = FullUserSerializer(user)
+            return Response(
+                {
+                    'results': serializer_data.data
                 },
                 status=status.HTTP_200_OK
             )
