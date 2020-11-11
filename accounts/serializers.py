@@ -93,3 +93,28 @@ class ChangePasswordSerializer(serializers.Serializer):
         except User.DoesNotExist:
             raise serializers.ValidationError('User with email does not exist')
         return data
+
+
+class UpdatePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField()
+    new_password = serializers.CharField()
+    email = serializers.EmailField()
+
+    def validate(self, data):
+        email = data.get('email', None)
+        old_password = data.get('old_password', None)
+        new_password = data.get('new_password', None)
+
+        try:
+            user = User.objects.get(email=email)
+            is_password_correct = user.check_password(old_password)
+            if not is_password_correct:
+                raise serializers.ValidationError('Old password is wrong')
+            if not user.is_verified:
+                raise serializers.ValidationError('User is not verified')
+            data['user'] = user
+        except User.DoesNotExist as identifier:
+            raise serializers.ValidationError('User with email does not exist')
+        return data
+        
+

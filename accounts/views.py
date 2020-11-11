@@ -3,13 +3,13 @@ from django.contrib.auth import authenticate
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from accounts.models import User
 from accounts.serializers import UserSerializer, SignupSerializer, ActivateUserSerilaizer, FullUserSerializer, \
-    ForgotPasswordSerializer, ChangePasswordSerializer
+    ForgotPasswordSerializer, ChangePasswordSerializer, UpdatePasswordSerializer
 from accounts.permissions import IsLoggedInUserOrAdmin, IsAdminUser
 from accounts import utils as u
 from accounts import mails
@@ -114,6 +114,30 @@ class UserViewSet(viewsets.ModelViewSet):
                 'errors': user_data.errors
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
+
+    @action(methods=['post'], detail=False, url_path='update-password', permission_classes=[IsAuthenticated])
+    def update_password(self, request):
+        serializer = UpdatePasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            new_password = serializer.validated_data['new_password']
+            user.set_password(new_password)
+            user.save()
+            mails.send_update_password_email(user)
+            serializer_data = FullUserSerializer(user)
+            return Response(
+                {
+                    'results': serializer_data.data
+                },
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            {
+                'errors': serializer.errors
+            },
+            status=status.HTTP_400_BAD_REQUEST
         )
     
     @action(methods=['post'], detail=False, url_path='login', permission_classes=[AllowAny])
