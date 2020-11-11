@@ -140,6 +140,52 @@ class UserViewSet(viewsets.ModelViewSet):
             status=status.HTTP_400_BAD_REQUEST
         )
     
+
+    @action(methods=['post'], detail=False, url_path='verify-forgot-password', permission_classes=[AllowAny])
+    def verify_forgot_password(self, request):
+        serializer = ActivateUserSerilaizer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            user.is_verified = True
+            user.save()
+            serializer_data = FullUserSerializer(user)
+            return Response(
+                {
+                    "results": serializer_data.data
+                },
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            {
+                'errors': serializer.errors
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+
+    @action(methods=['post'], detail=False, url_path='verify-user', permission_classes=[AllowAny])
+    def verify(self, request):
+        serializer = ActivateUserSerilaizer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            user.is_verified = True
+            user.save()
+            token = Token.objects.get_or_create(user=user)
+            mails.send_verification_email(user)
+            serializer_data = FullUserSerializer(user)
+            return Response(
+                {
+                    "results": serializer_data.data
+                },
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            {
+                'errors': serializer.errors
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
     @action(methods=['post'], detail=False, url_path='login', permission_classes=[AllowAny])
     def login(self, request):
         email = request.data.get('email')
@@ -210,52 +256,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def facebook_signup(self, request):
         pass
-    @action(methods=['post'], detail=False, url_path='verify-user', permission_classes=[AllowAny])
-    def verify(self, request):
-        serializer = ActivateUserSerilaizer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data['user']
-            user.is_verified = True
-            user.save()
-            token = Token.objects.get_or_create(user=user)
-            mails.send_verification_email(user)
-            serializer_data = FullUserSerializer(user)
-            return Response(
-                {
-                    "results": serializer_data.data
-                },
-                status=status.HTTP_200_OK
-            )
-        return Response(
-            {
-                'errors': serializer.errors
-            },
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    action(methods=['post'], detail=False, url_path='verify-forgot-password', permission_classes=[AllowAny])
-    def verify_forgot_password(self, request):
-        serializer = ActivateUserSerilaizer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data['user']
-            user.is_verified = True
-            user.save()
-            serializer_data = FullUserSerializer(user)
-            return Response(
-                {
-                    "results": serializer_data.data
-                },
-                status=status.HTTP_200_OK
-            )
-        return Response(
-            {
-                'errors': serializer.errors
-            },
-            status=status.HTTP_400_BAD_REQUEST
-        )
 
 
-    action(methods=['post'], detail=False, url_path='change-password', permission_classes=[AllowAny])
+    @action(methods=['post'], detail=False, url_path='change-password', permission_classes=[AllowAny])
     def change_password(self, request):
         serializer = ChangePasswordSerializer(data=request.data)
         if serializer.is_valid():
