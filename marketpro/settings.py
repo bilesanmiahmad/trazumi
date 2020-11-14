@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'payments',
     'django_extensions',
     'django_q',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -121,6 +122,16 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+Q_CLUSTER = {
+    'name': 'DjangORM',
+    'workers': 4,
+    'timeout': 90,
+    'retry': 120,
+    'queue_limit': 50,
+    'bulk': 10,
+    'orm': 'default'
+}
 
 
 # Internationalization

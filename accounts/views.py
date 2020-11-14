@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth import authenticate
+
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
@@ -7,6 +8,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
+from django_q.tasks import async_task
+
 from accounts.models import User
 from accounts.serializers import UserSerializer, SignupSerializer, ActivateUserSerilaizer, FullUserSerializer, \
     ForgotPasswordSerializer, ChangePasswordSerializer, UpdatePasswordSerializer
@@ -100,7 +103,9 @@ class UserViewSet(viewsets.ModelViewSet):
                 token = Token.objects.create(user=user)
                 user.verification_pin = u.get_verification_code()
                 user.save()
-                mails.send_formatted_email(user)
+                async_task(
+                    'accounts.mails.send_formatted_email',
+                    user=user)
                 user_data = serializer.data
                 user_data['verification_pin'] = user.verification_pin
             return Response(
@@ -125,7 +130,7 @@ class UserViewSet(viewsets.ModelViewSet):
             new_password = serializer.validated_data['new_password']
             user.set_password(new_password)
             user.save()
-            mails.send_update_password_email(user)
+            async_task('accounts.mails.send_update_password_email', user=user)
             serializer_data = FullUserSerializer(user)
             return Response(
                 {
@@ -171,7 +176,7 @@ class UserViewSet(viewsets.ModelViewSet):
             user.is_verified = True
             user.save()
             token = Token.objects.get_or_create(user=user)
-            mails.send_verification_email(user)
+            async_task('accounts.mails.send_verification_email', user=user)
             serializer_data = FullUserSerializer(user)
             return Response(
                 {
@@ -239,7 +244,7 @@ class UserViewSet(viewsets.ModelViewSet):
             user = serializer.validated_data['user']
             user.verification_pin = u.get_verification_code()
             user.save()
-            mails.send_forgot_password_email(user)
+            async_task('accounts.mails.send_forgot_password_email', user=user)
             serialized_data = UserSerializer(user)
             return Response(
                 {
@@ -267,7 +272,7 @@ class UserViewSet(viewsets.ModelViewSet):
             user.set_password(password)
             user.save()
             token = Token.objects.get_or_create(user=user)
-            mails.send_change_password_email(user)
+            async_task('accounts.mails.send_change_password_email', user=user)
             serializer_data = FullUserSerializer(user)
             return Response(
                 {
