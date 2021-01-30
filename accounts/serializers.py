@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Profile
+from .models import User, Profile, Address
 
 
 class SignupSerializer(serializers.Serializer):
@@ -28,18 +28,31 @@ class SignupSerializer(serializers.Serializer):
             return value
 
 
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'date_joined', 'verification_pin']
 
 
-class FullUserSerializer(serializers.ModelSerializer):
+class AddressSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Address
+        fields = ['line1', 'line2', 'town', 'city', 'state', 'lga']
 
+
+class ProfileSerializer(serializers.ModelSerializer):
+    address = AddressSerializer()
+    class Meta:
+        model = Profile
+        fields = ['user', 'device_type', 'ip_address', 'location', 'user_type', 'primary_phone', 'address']
+
+
+class FullUserSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer()
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'date_joined', 'verification_pin', 'auth_token']
+        fields = ['first_name', 'last_name', 'email', 'date_joined', 'verification_pin', 'auth_token', 'profile']
 
 
 class ActivateUserSerilaizer(serializers.Serializer):
@@ -82,7 +95,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 
         if len(password) < 8:
             raise serializers.ValidationError('Password should be 8 or more characters')
-        elif password is not confirm_password:
+        elif password != confirm_password:
             raise serializers.ValidationError('Passwords must be equal')
 
         try:

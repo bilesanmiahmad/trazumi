@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     'payments',
     'django_extensions',
     'django_q',
-    'drf_yasg',
 ]
 
 MIDDLEWARE = [

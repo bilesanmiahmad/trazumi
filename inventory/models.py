@@ -1,5 +1,5 @@
 from django.db import models
-from accounts.models import User
+from accounts.models import User, Address
 # Create your models here.
 
 class Brand(models.Model):
@@ -7,13 +7,16 @@ class Brand(models.Model):
         'Brand Name',
         max_length=30
     )
-    supervisor = models.OneToOneField(
-        User,
-        on_delete=models.PROTECT,        
-    )
     logo = models.ImageField(
         'Logo',
-        upload_to='logos'
+        upload_to='logos',
+        blank=True,
+        null=True
+    )
+    created_by = models.ForeignKey(
+        User, 
+        on_delete=models.DO_NOTHING, 
+        related_name='brands'
     )
     created = models.DateTimeField(
         'Created',
@@ -29,36 +32,17 @@ class Store(models.Model):
     brand = models.ForeignKey(
         Brand,
         on_delete=models.PROTECT,
+        related_name='brand_stores'
+    )
+    address = models.ForeignKey(
+        Address, 
+        on_delete=models.DO_NOTHING, 
+        related_name='addresses'
+    )
+    created_by = models.ForeignKey(
+        User, 
+        on_delete=models.DO_NOTHING, 
         related_name='stores'
-    )
-    image = models.ImageField(
-        'Image',
-        upload_to='pics/'
-    )
-    street1 = models.CharField(
-        'Street 1',
-        max_length=50,
-        blank=True
-    )
-    street2 = models.CharField(
-        'Street 2',
-        max_length=50,
-        blank=True,
-    )
-    town = models.CharField(
-        'Town',
-        max_length=20,
-        blank=True,
-    )
-    city = models.CharField(
-        'City',
-        max_length=20,
-        blank=True,
-    )
-    state = models.CharField(
-        'State',
-        max_length=20,
-        blank=True,
     )
     created = models.DateTimeField(
         'Created',
@@ -69,6 +53,21 @@ class Store(models.Model):
         auto_now=True,
     )
 
+    def __str__(self):
+        return self.brand.name
+
 
 class Product(models.Model):
-    pass
+    name = models.CharField(
+        max_length=100
+    )
+    owner = models.ForeignKey(Store, on_delete=models.DO_NOTHING, related_name='store_products')
+    cost_price = models.DecimalField(max_digits=10, decimal_places=2)
+    selling_price = models.DecimalField(max_digits=10, decimal_places=2)
+    image = models.ImageField(upload_to='product_images', blank=True, null=True)
+    created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='products_by')
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return '{name} by {brand}, {city}'.format(name=self.name, brand=self.owner.brand.name, city=self.owner.address.city)

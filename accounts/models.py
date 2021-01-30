@@ -76,10 +76,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Address(models.Model):
-    line_1 = models.CharField(max_length=200)
+    line_1 = models.CharField(max_length=200, blank=True)
     line_2 = models.CharField(max_length=200, blank=True)
-    state = models.CharField(max_length=20)
-    lga = models.CharField(max_length=40)
+    town = models.CharField(max_length=100, blank=True)
+    city = models.CharField(max_length=100,  blank=True)
+    state = models.CharField(max_length=20, blank=True)
+    lga = models.CharField(max_length=40, blank=True)
     date_created = models.DateTimeField(auto_now=True)
     date_updated = models.DateTimeField(auto_now_add=True)
     
@@ -131,7 +133,7 @@ class Profile(models.Model):
         blank=True,
         null=True,
     )
-    address = models.ForeignKey(
+    address = models.OneToOneField(
         Address,
         on_delete=models.DO_NOTHING,
         related_name='user_addresses',
