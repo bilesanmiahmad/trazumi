@@ -27,6 +27,9 @@ class Brand(models.Model):
         auto_now=True
     )
 
+    def __str__(self):
+        return '{name}'.format(name=self.name)
+
 
 class Store(models.Model):
     brand = models.ForeignKey(
@@ -54,7 +57,7 @@ class Store(models.Model):
     )
 
     def __str__(self):
-        return self.brand.name
+        return '{name} -- {city}'.format(name=self.brand.name, city=self.address.city)
 
 
 class Product(models.Model):
