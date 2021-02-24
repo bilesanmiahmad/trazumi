@@ -1,9 +1,9 @@
-from django.db import models
-
 # Create your models here.
 from django.db import models
 from django.contrib.auth.models import PermissionsMixin, AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import AbstractUser
+
+from rest_framework.authtoken.models import Token
 
 
 class UserManager(BaseUserManager):
@@ -16,6 +16,7 @@ class UserManager(BaseUserManager):
             raise ValueError("This object requires an email")
         user = self.model(email=self.normalize_email(email), **extra_fields)
         user.set_password(password)
+        Token.objects.get_or_create(user=user)
         user.save(using=self._db)
         return user
     

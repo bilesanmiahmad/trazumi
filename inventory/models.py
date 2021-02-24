@@ -9,7 +9,7 @@ class Brand(models.Model):
     )
     logo = models.ImageField(
         'Logo',
-        upload_to='logos',
+        upload_to='logos/',
         blank=True,
         null=True
     )
