@@ -38,7 +38,7 @@ class AddressSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Address
-        fields = ['line1', 'line2', 'town', 'city', 'state', 'lga']
+        fields = ['line_1', 'line_2', 'town', 'city', 'state', 'lga']
 
 
 class ProfileSerializer(serializers.ModelSerializer):

@@ -19,12 +19,16 @@ from rest_framework.routers import DefaultRouter
 from rest_framework import permissions
 
 from accounts.views import UserViewSet
-from inventory.views import BrandViewSet
+from inventory.views import BrandViewSet, StoreViewSet, ProductViewSet
 
 
 router = DefaultRouter()
 router.register(r'accounts', UserViewSet)
 router.register(r'brands', BrandViewSet, 'brands')
+router.register(r'stores', StoreViewSet, 'stores')
+router.register(r'products', ProductViewSet, 'products')
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(router.urls)),

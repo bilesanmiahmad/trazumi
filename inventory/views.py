@@ -28,7 +28,7 @@ class BrandViewSet(viewsets.ModelViewSet):
                 {
                     'results': serializer.data
                 },
-                status=status.HTTP_200_OK
+                status=status.HTTP_201_CREATED
             )
         return Response(
             {
@@ -45,4 +45,48 @@ class StoreViewSet(viewsets.ModelViewSet):
 
     @action(methods=['post'], detail=False, url_path='create-store', permission_classes=[IsAdminUser])
     def create_store(self, request):
-        pass
+        serializer = StoreSerializer(data=request.data)
+        if serializer.is_valid():
+            store = serializer.save()
+            store.created_by = request.user
+            store.save()
+            store_serializer = StoreSerializer(store)
+            return Response(
+                {
+                    'results': store_serializer.data
+                },
+                status=status.HTTP_201_CREATED
+            )
+        return Response(
+            {
+                'errors': serializer.errors
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [IsAdminUser]
+
+    @action(methods=['post'], detail=False, url_path='create-product', permission_classes=[IsAdminUser])
+    def create_product(self, request):
+        serializer = ProductSerializer(data=request.data)
+        if serializer.is_valid():
+            product = serializer.save()
+            product.created_by = request.user
+            product.save()
+            product_serializer = ProductSerializer(product)
+            return Response(
+                {
+                    'results': product_serializer.data
+                },
+                status=status.HTTP_201_CREATED
+            )
+        return Response(
+            {
+                'errors': serializer.errors
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
