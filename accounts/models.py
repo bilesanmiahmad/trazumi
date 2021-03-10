@@ -16,8 +16,8 @@ class UserManager(BaseUserManager):
             raise ValueError("This object requires an email")
         user = self.model(email=self.normalize_email(email), **extra_fields)
         user.set_password(password)
-        Token.objects.get_or_create(user=user)
         user.save(using=self._db)
+        Token.objects.get_or_create(user=user)
         return user
     
     def create_superuser(self, email, password):
