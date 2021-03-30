@@ -2,7 +2,7 @@ arrow==0.17.0
 blessed==1.17.11
 boto3==1.17.10
 botocore==1.20.10
-Django==3.0.5
+Django==3.0.12
 django-extensions==2.2.3
 django-storages==1.11.1
 django-picklefield==3.0.1
