@@ -4,15 +4,15 @@ from accounts.models import User, Address
 from accounts.serializers import UserSerializer, AddressSerializer
 
 class BrandSerializer(serializers.ModelSerializer):
-    created_by = UserSerializer()
+    created_by = UserSerializer(read_only=True)
     class Meta:
         model = Brand
         fields = ['id', 'name', 'logo', 'created_by', 'created', 'updated']
     
-    def create(self, validated_data):
-        name = validated_data.get('name', None)
-        brand = Brand(name=name)
-        return brand
+    # def create(self, validated_data):
+    #     name = validated_data.get('name', None)
+    #     brand = Brand(name=name)
+    #     return brand
 
 
 
@@ -73,3 +73,8 @@ class ProductSerializer(serializers.ModelSerializer):
         product = Product(name=name, owner=store, selling_price=selling_price, cost_price=cost_price, image=image)
         return product
 
+class ProductOutputSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Product
+        fields = ('id', 'name', 'image', 'cost_price', 'selling_price')

@@ -9,6 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django_q.tasks import async_task
+from accounts import serializers
 
 from accounts.models import User
 from accounts.serializers import UserSerializer, SignupSerializer, ActivateUserSerilaizer, FullUserSerializer, \
@@ -116,7 +117,7 @@ class UserViewSet(viewsets.ModelViewSet):
             )
         return Response(
             {
-                'errors': user_data.errors
+                'errors': serializer.errors
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )

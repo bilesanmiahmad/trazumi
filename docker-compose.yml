@@ -18,5 +18,15 @@ services:
             - "3000:3000"
         depends_on: 
             - db
+    
+    centrifugo:
+        container_name: centrifugo
+        image: centrifugo/centrifugo:latest
+        command: centrifugo -c config.json --port=8086 --admin
+        volumes:
+            - ./config.json:/centrifugo/config.json
+        ports:
+            - "8086:8086"
+        
 volumes: 
     postgres_data:
