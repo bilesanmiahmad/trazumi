@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate
 
 from rest_framework import viewsets
+from rest_framework import views
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -11,8 +12,8 @@ from rest_framework.authtoken.models import Token
 from django_q.tasks import async_task
 from accounts import serializers
 
-from accounts.models import User
-from accounts.serializers import UserSerializer, SignupSerializer, ActivateUserSerilaizer, FullUserSerializer, \
+from accounts.models import User, Profile
+from accounts.serializers import UserSerializer, ProfileSerializer, SignupSerializer, ActivateUserSerilaizer, FullUserSerializer, \
     ForgotPasswordSerializer, ChangePasswordSerializer, UpdatePasswordSerializer
 from accounts.permissions import IsLoggedInUserOrAdmin, IsAdminUser
 from accounts import utils as u
@@ -288,3 +289,58 @@ class UserViewSet(viewsets.ModelViewSet):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+class ProfileViewSet(viewsets.ModelViewSet):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+    permission_classes = [AllowAny]
+
+class ProfileDetailView(views.APIView):
+    permission_classes = [AllowAny]
+
+    def get_object(self, profile_id):
+        '''
+        Helper method to get the object with given profile_id
+        '''
+        try:
+            return Profile.objects.get(id=profile_id)
+        except Profile.DoesNotExist:
+            return None
+
+    # 3. Retrieve
+    def get(self, request, profile_id, *args, **kwargs):
+        '''
+        Retrieves the Profile with given profile_id
+        '''
+        profile_instance = self.get_object(profile_id)
+        if not profile_instance:
+            return Response(
+                {"res": "Object with profile id does not exist"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = ProfileSerializer(profile_instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # @action(methods=['put'], detail=False, url_path='update-profile', permission_classes=[AllowAny])
+    # Update
+    def put(self, request, profile_id, *args, **kwargs):
+        profile_instance = self.get_object(profile_id)
+        # print(profile_instance)
+
+        if not profile_instance:
+            return Response(
+                {"res": "Object with profile id does not exist"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        data = {
+            'telegram_chat_id': request.data.get('telegram_chat_id')
+        }
+        serializer = ProfileSerializer(profile_instance, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+        
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

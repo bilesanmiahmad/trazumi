@@ -1,32 +1,37 @@
 version: '3'
-services: 
+services:
     db:
         image: postgres:11
-        env_file: 
+        env_file:
             - .env
-        volumes: 
+        volumes:
             - "postgres_data:/var/lib/postgresql/data/"
 
     web:
         build: .
         command: python manage.py runserver 0.0.0.0:3000
-        volumes: 
-            - .:/code
-        env_file: 
-            - .env
-        ports: 
-            - "3000:3000"
-        depends_on: 
-            - db
-    
-    centrifugo:
-        container_name: centrifugo
-        image: centrifugo/centrifugo:latest
-        command: centrifugo -c config.json --port=8086 --admin
         volumes:
-            - ./config.json:/centrifugo/config.json
+            - .:/code
+        env_file:
+            - .env
         ports:
-            - "8086:8086"
-        
-volumes: 
+            - "3000:3000"
+        depends_on:
+            - db
+
+    testbot:
+        build: .
+        command: python run_bot.py
+        depends_on:
+            - web
+        # centrifugo:
+        #     container_name: centrifugo
+        #     image: centrifugo/centrifugo:latest
+        #     command: centrifugo -c config.json --port=8086 --admin
+        #     volumes:
+        #         - ./config.json:/centrifugo/config.json
+        #     ports:
+        #         - "8086:8086"
+
+volumes:
     postgres_data:

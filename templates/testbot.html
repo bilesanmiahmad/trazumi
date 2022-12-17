@@ -1,0 +1,15 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Profile Data</h1>
+
+<p><strong>Profile:</strong> {{ profile.telegram_username }}</a></p>
+
+<div style="margin-left:20px;margin-top:20px">
+    <h4>Details</h4>
+
+    <p><strong>Device:</strong> {{ profile.device_type }}</p>
+    <p><strong>Location:</strong> {{ profile.location }}</p>
+    <p class="text-muted"><strong>email:</strong> {{ profile.user.email }}</p>
+</div>
+{% endblock %}

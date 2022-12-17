@@ -45,7 +45,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     address = AddressSerializer()
     class Meta:
         model = Profile
-        fields = ['user', 'device_type', 'ip_address', 'location', 'user_type', 'primary_phone', 'address']
+        fields = ['user', 'device_type', 'ip_address', 'location', 'user_type', 'primary_phone', 'address', 'telegram_username', 'telegram_chat_id']
 
 
 class FullUserSerializer(serializers.ModelSerializer):

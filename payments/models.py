@@ -5,6 +5,7 @@ from inventory.models import Product
 
 # Create your models here.
 
+
 class PaymentType(models.Model):
     name = models.CharField(
         'Payment Type Name',
@@ -19,6 +20,9 @@ class PaymentType(models.Model):
         auto_now=True,
     )
 
+    def __str__(self):
+        return f'{self.name}'
+
 
 class Payment(models.Model):
     user = models.ForeignKey(
@@ -31,7 +35,7 @@ class Payment(models.Model):
 class Transaction(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='transactions')
-    cart = models.ForeignKey('Cart', on_delete=models.DO_NOTHING, related_name='carts')
+    cart = models.ForeignKey('Cart', on_delete=models.DO_NOTHING, related_name='carts', null=True)
     date_created = models.DateTimeField(auto_now=True)
     date_updated = models.DateTimeField(auto_now_add=True)
 
